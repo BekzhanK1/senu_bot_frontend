@@ -77,10 +77,10 @@ export default function Home() {
     },
     ...(user?.id && adminId && user.id === adminId
       ? [{
-          title: 'Admin Panel',
+          title: 'Панель ментора',
           icon: <Shield className="w-6 h-6 text-violet-500" />,
           href: '/admin',
-          desc: 'Заявки, фильтры и статусы',
+          desc: 'Заявки, события, студенты, рассылка',
         }]
       : []),
   ];

@@ -89,6 +89,25 @@ export async function getCurrentTgUser(): Promise<TgUserPayload> {
   return extractTgUser(webApp);
 }
 
+/** Лёгкая тактильная отдача в Telegram (если доступно). */
+export async function twaHapticLight(): Promise<void> {
+  try {
+    const w = await loadWebApp();
+    w.HapticFeedback?.impactOccurred?.('light');
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function twaHapticSuccess(): Promise<void> {
+  try {
+    const w = await loadWebApp();
+    w.HapticFeedback?.notificationOccurred?.('success');
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function sendRequestViaApi(type: 'question' | 'meeting' | 'game_108', payload: object): Promise<boolean> {
   try {
     const tgUser = await getCurrentTgUser();
