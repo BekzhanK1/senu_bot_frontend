@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Bell,
+  CalendarClock,
   CalendarHeart,
   CheckCircle2,
   Loader2,
@@ -40,7 +41,36 @@ export type AdminUserItem = {
   is_blocked: boolean;
 };
 
-type TabId = 'requests' | 'event' | 'users' | 'broadcast';
+type MeetingBookingRow = {
+  id: number;
+  student_user_id: number;
+  student_full_name: string;
+  student_username?: string | null;
+  start_at: string;
+  end_at: string;
+  start_local_label: string;
+  status: string;
+  topic?: string | null;
+  request_id?: number | null;
+};
+
+type DaySchedule = { enabled: boolean; start: string; end: string };
+type WeeklyHoursState = Record<string, DaySchedule>;
+
+type TabId = 'requests' | 'meetings' | 'event' | 'users' | 'broadcast';
+
+const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+const SLOT_OPTIONS = [15, 20, 30, 45, 60] as const;
+
+function emptyWeeklyHours(): WeeklyHoursState {
+  return Object.fromEntries(
+    Array.from({ length: 7 }, (_, i) => [
+      String(i),
+      { enabled: i < 5, start: '10:00', end: '18:00' },
+    ])
+  ) as WeeklyHoursState;
+}
 
 const FILTERS: Array<{ key: string; label: string }> = [
   { key: 'all', label: 'Все' },
@@ -61,6 +91,7 @@ const TYPE_ACCENT: Record<string, string> = {
 
 const TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
   { id: 'requests', label: 'Заявки', icon: Sparkles },
+  { id: 'meetings', label: 'Слоты', icon: CalendarClock },
   { id: 'event', label: 'Событие', icon: CalendarHeart },
   { id: 'users', label: 'Студенты', icon: Users },
   { id: 'broadcast', label: 'Рассылка', icon: Radio },
@@ -93,6 +124,15 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
 
   const [broadcastText, setBroadcastText] = useState('');
   const [broadcastSubmitting, setBroadcastSubmitting] = useState(false);
+
+  const [meetings, setMeetings] = useState<MeetingBookingRow[]>([]);
+  const [meetingsLoading, setMeetingsLoading] = useState(false);
+  const [meetingActionId, setMeetingActionId] = useState<number | null>(null);
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(() => emptyWeeklyHours());
+  const [slotMinutes, setSlotMinutes] = useState(30);
+  const [scheduleTimezone, setScheduleTimezone] = useState('Asia/Almaty');
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleSaving, setScheduleSaving] = useState(false);
 
   useTwaBackButton(router);
 
@@ -146,6 +186,53 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
     }
   }, []);
 
+  const loadMeetingsAndSchedule = useCallback(async (userId: number) => {
+    setMeetingsLoading(true);
+    setScheduleLoading(true);
+    try {
+      const [mRes, sRes] = await Promise.all([
+        fetch(`/api/admin/meetings?${new URLSearchParams({ tg_user_id: String(userId) })}`, {
+          cache: 'no-store',
+        }),
+        fetch(`/api/admin/schedule?${new URLSearchParams({ tg_user_id: String(userId) })}`, {
+          cache: 'no-store',
+        }),
+      ]);
+      if (!mRes.ok) throw new Error(await mRes.text());
+      if (!sRes.ok) throw new Error(await sRes.text());
+      const mData = (await mRes.json()) as { items?: MeetingBookingRow[] };
+      const sData = (await sRes.json()) as {
+        weekly_hours?: WeeklyHoursState;
+        slot_minutes?: number;
+        timezone?: string;
+      };
+      setMeetings(mData.items ?? []);
+      const base = emptyWeeklyHours();
+      const wh = sData.weekly_hours ?? {};
+      for (let i = 0; i < 7; i++) {
+        const k = String(i);
+        const row = wh[k];
+        if (row && typeof row.start === 'string' && typeof row.end === 'string') {
+          base[k] = {
+            enabled: Boolean(row.enabled),
+            start: row.start,
+            end: row.end,
+          };
+        }
+      }
+      setWeeklyHours(base);
+      if (typeof sData.slot_minutes === 'number') setSlotMinutes(sData.slot_minutes);
+      if (typeof sData.timezone === 'string' && sData.timezone.trim()) {
+        setScheduleTimezone(sData.timezone.trim());
+      }
+    } catch (e) {
+      await showTwaError(e instanceof Error ? e : new Error('Не удалось загрузить слоты и расписание.'));
+    } finally {
+      setMeetingsLoading(false);
+      setScheduleLoading(false);
+    }
+  }, []);
+
   const loadUsers = useCallback(async (userId: number) => {
     setUsersLoading(true);
     try {
@@ -164,13 +251,15 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
   const refreshAll = useCallback(async () => {
     if (!tgUserId) return;
     void twaHapticLight();
+    const extra = tab === 'meetings' ? [loadMeetingsAndSchedule(tgUserId)] : [];
     await Promise.all([
       loadStats(tgUserId, statusTab),
       loadRequests(tgUserId, selectedFilter, statusTab),
       loadUsers(tgUserId),
+      ...extra,
     ]);
     void twaHapticSuccess();
-  }, [tgUserId, loadStats, loadRequests, loadUsers, selectedFilter, statusTab]);
+  }, [tgUserId, loadStats, loadRequests, loadUsers, loadMeetingsAndSchedule, selectedFilter, statusTab, tab]);
 
   useEffect(() => {
     void (async () => {
@@ -203,6 +292,83 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
     if (!tgUserId) return;
     void loadRequests(tgUserId, selectedFilter, statusTab);
   }, [tgUserId, loadRequests, selectedFilter, statusTab]);
+
+  useEffect(() => {
+    if (!tgUserId || tab !== 'meetings') return;
+    void loadMeetingsAndSchedule(tgUserId);
+  }, [tgUserId, tab, loadMeetingsAndSchedule]);
+
+  const saveSchedule = async () => {
+    if (!tgUserId || scheduleSaving) return;
+    setScheduleSaving(true);
+    void twaHapticLight();
+    try {
+      const response = await fetch('/api/admin/schedule', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          tg_user_id: tgUserId,
+          weekly_hours: weeklyHours,
+          slot_minutes: slotMinutes,
+          timezone: scheduleTimezone.trim() || 'Asia/Almaty',
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error((err as { detail?: string }).detail || (await response.text()));
+      }
+      void twaHapticSuccess();
+      await showTwaAlert('Расписание сохранено.');
+    } catch (e) {
+      await showTwaError(e instanceof Error ? e : new Error('Не удалось сохранить.'));
+    } finally {
+      setScheduleSaving(false);
+    }
+  };
+
+  const confirmMeeting = async (bookingId: number) => {
+    if (!tgUserId || meetingActionId) return;
+    setMeetingActionId(bookingId);
+    void twaHapticLight();
+    try {
+      const response = await fetch(`/api/admin/meetings/${bookingId}/confirm`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ tg_user_id: tgUserId }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      void twaHapticSuccess();
+      await showTwaAlert('Студент получил подтверждение в Telegram.');
+      await loadMeetingsAndSchedule(tgUserId);
+    } catch (e) {
+      await showTwaError(e instanceof Error ? e : new Error('Не удалось подтвердить.'));
+    } finally {
+      setMeetingActionId(null);
+    }
+  };
+
+  const completeMeeting = async (bookingId: number) => {
+    if (!tgUserId || meetingActionId) return;
+    setMeetingActionId(bookingId);
+    void twaHapticLight();
+    try {
+      const response = await fetch(`/api/admin/meetings/${bookingId}/complete`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ tg_user_id: tgUserId }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      void twaHapticSuccess();
+      await showTwaAlert('Встреча завершена, студент уведомлён.');
+      await loadMeetingsAndSchedule(tgUserId);
+      await loadStats(tgUserId, statusTab);
+      await loadRequests(tgUserId, selectedFilter, statusTab);
+    } catch (e) {
+      await showTwaError(e instanceof Error ? e : new Error('Не удалось завершить.'));
+    } finally {
+      setMeetingActionId(null);
+    }
+  };
 
   const markResolved = async (id: number) => {
     if (!tgUserId || resolvingId) return;
@@ -370,7 +536,7 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
           <div>
             <h1 className="text-2xl font-bold tracking-tight leading-tight">Панель ментора</h1>
             <p className="text-sm text-[var(--tg-theme-hint-color)] mt-1 leading-snug">
-              Заявки, события для всех студентов и рассылки — в одном месте.
+              Заявки, слоты встреч, события и рассылки — в одном месте.
             </p>
           </div>
         </div>
@@ -542,6 +708,209 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
               </ul>
             )}
           </>
+        )}
+
+        {tab === 'meetings' && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-bold text-lg">Календарь броней</h2>
+              <button
+                type="button"
+                onClick={() => tgUserId && void loadMeetingsAndSchedule(tgUserId)}
+                className="p-2.5 rounded-xl bg-[var(--tg-theme-secondary-bg-color)] active:scale-95 transition-transform"
+                aria-label="Обновить слоты"
+              >
+                <RefreshCw className={cn('w-5 h-5', meetingsLoading && 'animate-spin')} />
+              </button>
+            </div>
+            {meetingsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[var(--tg-theme-button-color)]" />
+              </div>
+            ) : meetings.length === 0 ? (
+              <p className="text-sm text-[var(--tg-theme-hint-color)] text-center py-8">
+                Пока нет записей на слоты.
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {meetings.map((m) => {
+                  const st =
+                    m.status === 'confirmed'
+                      ? 'Подтверждена'
+                      : m.status === 'completed'
+                        ? 'Завершена'
+                        : 'Ждёт подтверждения';
+                  return (
+                    <li
+                      key={m.id}
+                      className="rounded-2xl p-4 bg-[var(--tg-theme-secondary-bg-color)] border border-black/[0.05] space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="font-bold">#{m.id}</div>
+                          <div className="text-sm text-[var(--tg-theme-hint-color)]">
+                            {m.student_full_name}
+                            {m.student_username ? (
+                              <span className="text-[var(--tg-theme-text-color)]">
+                                {' '}
+                                @{m.student_username}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <span
+                          className={cn(
+                            'text-[10px] font-bold uppercase px-2 py-1 rounded-lg shrink-0',
+                            m.status === 'completed'
+                              ? 'bg-slate-500/15 text-slate-700 dark:text-slate-300'
+                              : m.status === 'confirmed'
+                                ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300'
+                                : 'bg-amber-500/15 text-amber-900 dark:text-amber-200'
+                          )}
+                        >
+                          {st}
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold">{m.start_local_label}</p>
+                      {m.topic ? (
+                        <p className="text-xs text-[var(--tg-theme-hint-color)]">Тема: {m.topic}</p>
+                      ) : null}
+                      {m.status === 'pending_confirm' && (
+                        <button
+                          type="button"
+                          disabled={meetingActionId === m.id}
+                          onClick={() => void confirmMeeting(m.id)}
+                          className="w-full py-3 rounded-xl bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-sm font-semibold disabled:opacity-50"
+                        >
+                          {meetingActionId === m.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin inline" />
+                          ) : (
+                            'Подтвердить встречу'
+                          )}
+                        </button>
+                      )}
+                      {m.status === 'confirmed' && (
+                        <button
+                          type="button"
+                          disabled={meetingActionId === m.id}
+                          onClick={() => void completeMeeting(m.id)}
+                          className="w-full py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50"
+                        >
+                          {meetingActionId === m.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin inline" />
+                          ) : (
+                            'Завершить встречу'
+                          )}
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            <div className="rounded-3xl p-4 border border-black/[0.06] space-y-4">
+              <h2 className="font-bold text-lg">Рабочие часы (Пн–Вс)</h2>
+              <p className="text-xs text-[var(--tg-theme-hint-color)] leading-relaxed">
+                Студенты видят только слоты внутри этих окон. Часовой пояс — как в календаре ментора.
+              </p>
+              {scheduleLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-7 h-7 animate-spin text-[var(--tg-theme-button-color)]" />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {DAY_LABELS.map((label, i) => {
+                      const k = String(i);
+                      const row = weeklyHours[k] ?? { enabled: false, start: '10:00', end: '18:00' };
+                      return (
+                        <div
+                          key={k}
+                          className="flex flex-wrap items-center gap-2 py-2 border-b border-black/[0.05] last:border-0"
+                        >
+                          <label className="flex items-center gap-2 w-24 shrink-0">
+                            <input
+                              type="checkbox"
+                              checked={row.enabled}
+                              onChange={(e) =>
+                                setWeeklyHours((prev) => ({
+                                  ...prev,
+                                  [k]: { ...row, enabled: e.target.checked },
+                                }))
+                              }
+                              className="rounded"
+                            />
+                            <span className="text-sm font-medium">{label}</span>
+                          </label>
+                          <input
+                            type="time"
+                            value={row.start}
+                            disabled={!row.enabled}
+                            onChange={(e) =>
+                              setWeeklyHours((prev) => ({
+                                ...prev,
+                                [k]: { ...row, start: e.target.value },
+                              }))
+                            }
+                            className="rounded-xl px-2 py-2 bg-[var(--tg-theme-bg-color)] border border-black/[0.08] text-sm disabled:opacity-40"
+                          />
+                          <span className="text-[var(--tg-theme-hint-color)]">—</span>
+                          <input
+                            type="time"
+                            value={row.end}
+                            disabled={!row.enabled}
+                            onChange={(e) =>
+                              setWeeklyHours((prev) => ({
+                                ...prev,
+                                [k]: { ...row, end: e.target.value },
+                              }))
+                            }
+                            className="rounded-xl px-2 py-2 bg-[var(--tg-theme-bg-color)] border border-black/[0.08] text-sm disabled:opacity-40"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <label className="block space-y-1">
+                    <span className="text-xs font-semibold text-[var(--tg-theme-hint-color)] uppercase">
+                      Длина слота (мин)
+                    </span>
+                    <select
+                      value={slotMinutes}
+                      onChange={(e) => setSlotMinutes(Number(e.target.value))}
+                      className="w-full rounded-2xl px-4 py-3 bg-[var(--tg-theme-secondary-bg-color)] border border-black/[0.06] text-sm"
+                    >
+                      {SLOT_OPTIONS.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block space-y-1">
+                    <span className="text-xs font-semibold text-[var(--tg-theme-hint-color)] uppercase">
+                      Часовой пояс (IANA)
+                    </span>
+                    <input
+                      value={scheduleTimezone}
+                      onChange={(e) => setScheduleTimezone(e.target.value)}
+                      placeholder="Asia/Almaty"
+                      className="w-full rounded-2xl px-4 py-3 bg-[var(--tg-theme-secondary-bg-color)] border border-black/[0.06] text-sm"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={scheduleSaving}
+                    onClick={() => void saveSchedule()}
+                    className="w-full py-3.5 rounded-2xl font-bold text-[var(--tg-theme-button-text-color)] bg-[var(--tg-theme-button-color)] disabled:opacity-50"
+                  >
+                    {scheduleSaving ? <Loader2 className="w-5 h-5 animate-spin inline" /> : 'Сохранить расписание'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         )}
 
         {tab === 'event' && (
