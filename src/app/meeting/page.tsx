@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { sendTwaData } from '@/lib/twa';
+import { sendTwaData, showTwaAlert, showTwaError } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
@@ -10,6 +10,7 @@ export default function MeetingPage() {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useTwaBackButton(router);
 
@@ -22,14 +23,24 @@ export default function MeetingPage() {
     return d;
   });
 
-  const handleConfirm = () => {
-    if (!selectedDate || !selectedSlot) return;
+  const handleConfirm = async () => {
+    if (!selectedDate || !selectedSlot) {
+      await showTwaError('Сначала выбери дату и время.');
+      return;
+    }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     const formattedDate = selectedDate.toLocaleDateString('ru', { day: 'numeric', month: 'long' });
-    void sendTwaData({
+    const ok = await sendTwaData({
       type: 'meeting',
       day: formattedDate,
       time: selectedSlot,
     });
+    if (ok) {
+      await showTwaAlert('Заявка отправлена. Скоро напишем тебе в чате.');
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -90,9 +101,10 @@ export default function MeetingPage() {
         <div className="fixed bottom-6 left-4 right-4 animate-in slide-in-from-bottom duration-500">
           <button
             onClick={handleConfirm}
+            disabled={isSubmitting}
             className="w-full p-4 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-all"
           >
-            Подтвердить запись
+            {isSubmitting ? 'Отправка...' : 'Подтвердить запись'}
           </button>
         </div>
       )}

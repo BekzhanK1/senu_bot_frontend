@@ -1,17 +1,25 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { sendTwaData } from '@/lib/twa';
+import { useState } from 'react';
+import { sendTwaData, showTwaAlert } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Sparkles, Target, Zap, Users } from 'lucide-react';
 
 export default function GamePage() {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useTwaBackButton(router);
 
-  const handleJoin = () => {
-    void sendTwaData({ type: 'game_108' });
+  const handleJoin = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const ok = await sendTwaData({ type: 'game_108' });
+    if (ok) {
+      await showTwaAlert('Отлично, заявка на игру отправлена.');
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -56,10 +64,11 @@ export default function GamePage() {
       <div className="fixed bottom-6 left-4 right-4">
         <button
           onClick={handleJoin}
+          disabled={isSubmitting}
           className="w-full p-4 bg-purple-600 text-white rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <Sparkles className="w-5 h-5" />
-          Хочу сыграть!
+          {isSubmitting ? 'Отправка...' : 'Хочу сыграть!'}
         </button>
       </div>
     </main>

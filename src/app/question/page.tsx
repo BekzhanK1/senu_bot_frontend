@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { sendTwaData } from '@/lib/twa';
+import { sendTwaData, showTwaAlert, showTwaError } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Send, ShieldCheck, User } from 'lucide-react';
 
@@ -10,16 +10,28 @@ export default function QuestionPage() {
   const router = useRouter();
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useTwaBackButton(router);
 
-  const handleSubmit = () => {
-    if (!text.trim()) return;
-    void sendTwaData({
+  const handleSubmit = async () => {
+    if (!text.trim()) {
+      await showTwaError('Напиши вопрос перед отправкой.');
+      return;
+    }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    const ok = await sendTwaData({
       type: 'question',
       text: text.trim(),
       is_anonymous: isAnon,
     });
+    if (ok) {
+      setText('');
+      await showTwaAlert('Вопрос отправлен ментору.');
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -61,12 +73,12 @@ export default function QuestionPage() {
       </div>
 
       <button
-        disabled={!text.trim()}
+        disabled={!text.trim() || isSubmitting}
         onClick={handleSubmit}
         className="w-full p-4 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
       >
         <Send className="w-5 h-5" />
-        Отправить вопрос
+        {isSubmitting ? 'Отправка...' : 'Отправить вопрос'}
       </button>
     </main>
   );

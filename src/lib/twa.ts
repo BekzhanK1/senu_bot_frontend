@@ -18,21 +18,29 @@ export function formatTwaError(err: unknown): string {
   return 'Неизвестная ошибка.';
 }
 
-/** Показать ошибку: в Telegram — нативный alert, иначе window.alert. */
-export async function showTwaError(err: unknown): Promise<void> {
-  const msg = formatTwaError(err);
+async function showTwaAlertMessage(message: string): Promise<void> {
   if (typeof window === 'undefined') return;
-
   try {
     const w = await import('@twa-dev/sdk').then((m) => m.default);
     if (typeof w.showAlert === 'function') {
-      w.showAlert(msg);
+      w.showAlert(message);
       return;
     }
   } catch {
     /* SDK не загрузился */
   }
-  window.alert(msg);
+  window.alert(message);
+}
+
+/** Показать ошибку: в Telegram — нативный alert, иначе window.alert. */
+export async function showTwaError(err: unknown): Promise<void> {
+  const msg = formatTwaError(err);
+  await showTwaAlertMessage(msg);
+}
+
+/** Показать информативное сообщение пользователю. */
+export async function showTwaAlert(message: string): Promise<void> {
+  await showTwaAlertMessage(message);
 }
 
 const SEND_DATA_HINT =
