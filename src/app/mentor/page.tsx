@@ -3,7 +3,15 @@
 import { useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, GraduationCap, Briefcase, Award, Heart } from 'lucide-react';
+import {
+  ChevronLeft,
+  GraduationCap,
+  Briefcase,
+  Award,
+  Heart,
+  Sparkles,
+  User,
+} from 'lucide-react';
 
 export default function MentorPage() {
   const router = useRouter();
@@ -70,7 +78,3 @@ export default function MentorPage() {
     </main>
   );
 }
-
-// Добавим недостающий импорт User
-import { User } from 'lucide-react';
-import { Sparkles as SparklesIcon } from 'lucide-react';
