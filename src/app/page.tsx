@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import WebApp from '@twa-dev/sdk';
+import { loadWebApp } from '@/lib/twa';
 import { 
   Calendar, 
   MessageCircleQuestion, 
@@ -17,10 +17,12 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      WebApp.ready();
-      setUser(WebApp.initDataUnsafe.user);
-    }
+    void loadWebApp()
+      .then((WebApp) => {
+        WebApp.ready();
+        setUser(WebApp.initDataUnsafe.user);
+      })
+      .catch(() => {});
   }, []);
 
   const menuItems = [

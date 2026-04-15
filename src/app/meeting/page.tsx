@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import WebApp from '@twa-dev/sdk';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { loadWebApp } from '@/lib/twa';
+import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
 export default function MeetingPage() {
@@ -10,11 +11,7 @@ export default function MeetingPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
-  useEffect(() => {
-    WebApp.BackButton.show();
-    WebApp.BackButton.onClick(() => router.back());
-    return () => WebApp.BackButton.hide();
-  }, [router]);
+  useTwaBackButton(router);
 
   const slots = ["10:00", "11:30", "14:00", "15:30", "17:00"];
   
@@ -26,14 +23,17 @@ export default function MeetingPage() {
   });
 
   const handleConfirm = () => {
-    if (selectedDate && selectedSlot) {
-      const formattedDate = selectedDate.toLocaleDateString('ru', { day: 'numeric', month: 'long' });
-      WebApp.sendData(JSON.stringify({
-        type: 'meeting',
-        day: formattedDate,
-        time: selectedSlot
-      }));
-    }
+    if (!selectedDate || !selectedSlot) return;
+    const formattedDate = selectedDate.toLocaleDateString('ru', { day: 'numeric', month: 'long' });
+    void loadWebApp().then((WebApp) => {
+      WebApp.sendData(
+        JSON.stringify({
+          type: 'meeting',
+          day: formattedDate,
+          time: selectedSlot,
+        })
+      );
+    });
   };
 
   return (

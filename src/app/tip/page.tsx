@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import WebApp from '@twa-dev/sdk';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Quote, Share2, Lightbulb } from 'lucide-react';
 
 export default function TipPage() {
@@ -18,11 +18,7 @@ export default function TipPage() {
 
   const [currentTip] = useState(() => tips[Math.floor(Math.random() * tips.length)]);
 
-  useEffect(() => {
-    WebApp.BackButton.show();
-    WebApp.BackButton.onClick(() => router.back());
-    return () => WebApp.BackButton.hide();
-  }, [router]);
+  useTwaBackButton(router);
 
   return (
     <main className="p-4 min-h-screen animate-in fade-in duration-500 bg-gradient-to-b from-yellow-50 to-white dark:from-zinc-900 dark:to-zinc-950">

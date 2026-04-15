@@ -1,21 +1,19 @@
 'use client';
 
-import { useEffect } from 'react';
-import WebApp from '@twa-dev/sdk';
 import { useRouter } from 'next/navigation';
+import { loadWebApp } from '@/lib/twa';
+import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Sparkles, Target, Zap, Users } from 'lucide-react';
 
 export default function GamePage() {
   const router = useRouter();
 
-  useEffect(() => {
-    WebApp.BackButton.show();
-    WebApp.BackButton.onClick(() => router.back());
-    return () => WebApp.BackButton.hide();
-  }, [router]);
+  useTwaBackButton(router);
 
   const handleJoin = () => {
-    WebApp.sendData(JSON.stringify({ type: 'game_108' }));
+    void loadWebApp().then((WebApp) => {
+      WebApp.sendData(JSON.stringify({ type: 'game_108' }));
+    });
   };
 
   return (

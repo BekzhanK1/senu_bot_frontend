@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import WebApp from '@twa-dev/sdk';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { loadWebApp } from '@/lib/twa';
+import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Send, ShieldCheck, User } from 'lucide-react';
 
 export default function QuestionPage() {
@@ -10,20 +11,19 @@ export default function QuestionPage() {
   const [text, setText] = useState('');
   const [isAnon, setIsAnon] = useState(false);
 
-  useEffect(() => {
-    WebApp.BackButton.show();
-    WebApp.BackButton.onClick(() => router.back());
-    return () => WebApp.BackButton.hide();
-  }, [router]);
+  useTwaBackButton(router);
 
   const handleSubmit = () => {
-    if (text.trim()) {
-      WebApp.sendData(JSON.stringify({ 
-        type: 'question', 
-        text: text.trim(), 
-        is_anonymous: isAnon 
-      }));
-    }
+    if (!text.trim()) return;
+    void loadWebApp().then((WebApp) => {
+      WebApp.sendData(
+        JSON.stringify({
+          type: 'question',
+          text: text.trim(),
+          is_anonymous: isAnon,
+        })
+      );
+    });
   };
 
   return (

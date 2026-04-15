@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import WebApp from '@twa-dev/sdk';
 import { useRouter } from 'next/navigation';
+import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import {
   ChevronLeft,
   GraduationCap,
@@ -16,11 +15,7 @@ import {
 export default function MentorPage() {
   const router = useRouter();
 
-  useEffect(() => {
-    WebApp.BackButton.show();
-    WebApp.BackButton.onClick(() => router.back());
-    return () => WebApp.BackButton.hide();
-  }, [router]);
+  useTwaBackButton(router);
 
   return (
     <main className="p-4 min-h-screen animate-in fade-in duration-500">
