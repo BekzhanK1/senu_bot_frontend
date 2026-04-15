@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { sendTwaData, showTwaAlert, showTwaError } from '@/lib/twa';
+import { sendRequestViaApi, showTwaAlert, showTwaError } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Send, ShieldCheck, User } from 'lucide-react';
 
@@ -22,8 +22,7 @@ export default function QuestionPage() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    const ok = await sendTwaData({
-      type: 'question',
+    const ok = await sendRequestViaApi('question', {
       text: text.trim(),
       is_anonymous: isAnon,
     });

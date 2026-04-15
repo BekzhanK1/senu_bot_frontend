@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { sendTwaData, showTwaAlert, showTwaError } from '@/lib/twa';
+import { sendRequestViaApi, showTwaAlert, showTwaError } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
@@ -32,8 +32,7 @@ export default function MeetingPage() {
 
     setIsSubmitting(true);
     const formattedDate = selectedDate.toLocaleDateString('ru', { day: 'numeric', month: 'long' });
-    const ok = await sendTwaData({
-      type: 'meeting',
+    const ok = await sendRequestViaApi('meeting', {
       day: formattedDate,
       time: selectedSlot,
     });

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { sendTwaData, showTwaAlert } from '@/lib/twa';
+import { sendRequestViaApi, showTwaAlert } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Sparkles, Target, Zap, Users } from 'lucide-react';
 
@@ -15,7 +15,7 @@ export default function GamePage() {
   const handleJoin = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    const ok = await sendTwaData({ type: 'game_108' });
+    const ok = await sendRequestViaApi('game_108', {});
     if (ok) {
       await showTwaAlert('Отлично, заявка на игру отправлена.');
     }

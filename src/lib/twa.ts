@@ -65,3 +65,42 @@ export async function sendTwaData(data: object): Promise<boolean> {
     return false;
   }
 }
+
+type TgUserPayload = {
+  id: number;
+  username?: string;
+  full_name: string;
+};
+
+function extractTgUser(webApp: WebAppModule): TgUserPayload {
+  const user = webApp.initDataUnsafe?.user;
+  if (!user?.id) {
+    throw new Error('Не удалось определить пользователя Telegram. Открой Mini App из чата с ботом.');
+  }
+  return {
+    id: user.id,
+    username: user.username,
+    full_name: [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Telegram User',
+  };
+}
+
+export async function sendRequestViaApi(type: 'question' | 'meeting' | 'game_108', payload: object): Promise<boolean> {
+  try {
+    const webApp = await loadWebApp();
+    const tgUser = extractTgUser(webApp);
+    const response = await fetch(`/api/requests/${type}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type, ...payload, tg_user: tgUser }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || 'Ошибка отправки запроса.');
+    }
+    return true;
+  } catch (e) {
+    await showTwaError(e instanceof Error ? e : new Error('Не удалось отправить запрос.'));
+    return false;
+  }
+}
