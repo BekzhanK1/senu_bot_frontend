@@ -9,12 +9,14 @@ import {
   UserCircle, 
   LifeBuoy, 
   Lightbulb,
+  Shield,
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
+  const adminId = Number(process.env.NEXT_PUBLIC_ADMIN_ID || 0);
 
   useEffect(() => {
     void loadWebApp()
@@ -67,6 +69,20 @@ export default function Home() {
       href: '/pcs', 
       desc: 'Психологическая поддержка' 
     },
+    {
+      title: 'Мой профиль',
+      icon: <UserCircle className="w-6 h-6 text-cyan-500" />,
+      href: '/profile',
+      desc: 'Твои данные и заявки',
+    },
+    ...(user?.id && adminId && user.id === adminId
+      ? [{
+          title: 'Admin Panel',
+          icon: <Shield className="w-6 h-6 text-violet-500" />,
+          href: '/admin',
+          desc: 'Заявки, фильтры и статусы',
+        }]
+      : []),
   ];
 
   return (

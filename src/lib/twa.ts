@@ -84,10 +84,14 @@ function extractTgUser(webApp: WebAppModule): TgUserPayload {
   };
 }
 
+export async function getCurrentTgUser(): Promise<TgUserPayload> {
+  const webApp = await loadWebApp();
+  return extractTgUser(webApp);
+}
+
 export async function sendRequestViaApi(type: 'question' | 'meeting' | 'game_108', payload: object): Promise<boolean> {
   try {
-    const webApp = await loadWebApp();
-    const tgUser = extractTgUser(webApp);
+    const tgUser = await getCurrentTgUser();
     const response = await fetch(`/api/requests/${type}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
