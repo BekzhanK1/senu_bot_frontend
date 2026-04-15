@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { loadWebApp } from '@/lib/twa';
+import { loadWebApp, showTwaError } from '@/lib/twa';
 import { 
   Calendar, 
   MessageCircleQuestion, 
@@ -19,10 +19,15 @@ export default function Home() {
   useEffect(() => {
     void loadWebApp()
       .then((WebApp) => {
-        WebApp.ready();
         setUser(WebApp.initDataUnsafe.user);
       })
-      .catch(() => {});
+      .catch((e) => {
+        void showTwaError(
+          e instanceof Error
+            ? e
+            : new Error('Не удалось загрузить данные пользователя Telegram.')
+        );
+      });
   }, []);
 
   const menuItems = [

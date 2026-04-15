@@ -11,3 +11,49 @@ export function loadWebApp(): Promise<WebAppModule> {
   cached ??= import('@twa-dev/sdk').then((m) => m.default);
   return cached;
 }
+
+export function formatTwaError(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  return 'Неизвестная ошибка.';
+}
+
+/** Показать ошибку: в Telegram — нативный alert, иначе window.alert. */
+export async function showTwaError(err: unknown): Promise<void> {
+  const msg = formatTwaError(err);
+  if (typeof window === 'undefined') return;
+
+  try {
+    const w = await import('@twa-dev/sdk').then((m) => m.default);
+    if (typeof w.showAlert === 'function') {
+      w.showAlert(msg);
+      return;
+    }
+  } catch {
+    /* SDK не загрузился */
+  }
+  window.alert(msg);
+}
+
+const SEND_DATA_HINT =
+  'Не удалось отправить данные боту. Откройте мини-приложение из чата с ботом в Telegram (кнопка или меню), не из обычного браузера.';
+
+/** Отправка в бота через sendData с показом ошибок пользователю. */
+export async function sendTwaData(data: object): Promise<boolean> {
+  try {
+    const payload = JSON.stringify(data);
+    if (payload.length > 4096) {
+      throw new Error('Слишком длинное сообщение для Telegram (макс. 4096 символов).');
+    }
+    const WebApp = await loadWebApp();
+    try {
+      WebApp.sendData(payload);
+    } catch {
+      throw new Error(SEND_DATA_HINT);
+    }
+    return true;
+  } catch (e) {
+    await showTwaError(e instanceof Error ? e : new Error(SEND_DATA_HINT));
+    return false;
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadWebApp } from '@/lib/twa';
+import { sendTwaData } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Send, ShieldCheck, User } from 'lucide-react';
 
@@ -15,14 +15,10 @@ export default function QuestionPage() {
 
   const handleSubmit = () => {
     if (!text.trim()) return;
-    void loadWebApp().then((WebApp) => {
-      WebApp.sendData(
-        JSON.stringify({
-          type: 'question',
-          text: text.trim(),
-          is_anonymous: isAnon,
-        })
-      );
+    void sendTwaData({
+      type: 'question',
+      text: text.trim(),
+      is_anonymous: isAnon,
     });
   };
 

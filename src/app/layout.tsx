@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import { TwaInit } from "@/components/TwaInit";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] min-h-screen overflow-x-hidden`}>
+        <TwaInit />
         {children}
       </body>
     </html>

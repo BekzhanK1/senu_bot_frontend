@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { loadWebApp } from '@/lib/twa';
+import { sendTwaData } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, Sparkles, Target, Zap, Users } from 'lucide-react';
 
@@ -11,9 +11,7 @@ export default function GamePage() {
   useTwaBackButton(router);
 
   const handleJoin = () => {
-    void loadWebApp().then((WebApp) => {
-      WebApp.sendData(JSON.stringify({ type: 'game_108' }));
-    });
+    void sendTwaData({ type: 'game_108' });
   };
 
   return (

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadWebApp } from '@/lib/twa';
+import { sendTwaData } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 
@@ -25,14 +25,10 @@ export default function MeetingPage() {
   const handleConfirm = () => {
     if (!selectedDate || !selectedSlot) return;
     const formattedDate = selectedDate.toLocaleDateString('ru', { day: 'numeric', month: 'long' });
-    void loadWebApp().then((WebApp) => {
-      WebApp.sendData(
-        JSON.stringify({
-          type: 'meeting',
-          day: formattedDate,
-          time: selectedSlot,
-        })
-      );
+    void sendTwaData({
+      type: 'meeting',
+      day: formattedDate,
+      time: selectedSlot,
     });
   };
 
