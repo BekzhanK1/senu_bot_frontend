@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarHeart, FileText, Menu, Radio, Settings2, Sparkles, UserCog, Users } from 'lucide-react';
+import { CalendarClock, CalendarHeart, FileText, Menu, Radio, Settings2, Sparkles, UserCog, Users, MoreHorizontal } from 'lucide-react';
 import type { AppSettings, TabId, WeeklyHoursState } from './types';
 
 export const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -21,16 +21,27 @@ export const TYPE_ACCENT: Record<string, string> = {
   crisis_triage: 'from-rose-400 to-red-500',
 };
 
-export const TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
+// Primary tabs - always visible
+export const PRIMARY_TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
   { id: 'requests', label: 'Заявки', icon: Sparkles },
   { id: 'meetings', label: 'Слоты', icon: CalendarClock },
-  { id: 'event', label: 'Событие', icon: CalendarHeart },
   { id: 'users', label: 'Студенты', icon: Users },
+  { id: 'event', label: 'Событие', icon: CalendarHeart },
   { id: 'broadcast', label: 'Рассылка', icon: Radio },
+];
+
+// Secondary tabs - in "More" menu
+export const SECONDARY_TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
   { id: 'content', label: 'Контент', icon: FileText },
   { id: 'menu', label: 'Меню', icon: Menu },
   { id: 'mentors', label: 'Менторы', icon: UserCog },
   { id: 'settings', label: 'Настройки', icon: Settings2 },
+];
+
+// All tabs combined
+export const TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
+  ...PRIMARY_TABS,
+  ...SECONDARY_TABS,
 ];
 
 export const CONTENT_CATEGORIES = [

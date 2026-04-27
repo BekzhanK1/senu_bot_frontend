@@ -38,12 +38,20 @@ export async function requestJson<T>(url: string, options: RequestOptions = {}):
 async function extractErrorMessage(response: Response): Promise<string> {
   const fallback = `HTTP ${response.status}`;
   try {
-    const payload = (await response.json()) as ErrorPayload;
-    if (payload.detail && payload.detail.trim()) return payload.detail;
-    if (payload.message && payload.message.trim()) return payload.message;
+    const text = await response.text();
+    if (!text.trim()) return fallback;
+    
+    try {
+      const payload = JSON.parse(text) as ErrorPayload;
+      if (payload.detail && payload.detail.trim()) return payload.detail;
+      if (payload.message && payload.message.trim()) return payload.message;
+    } catch {
+      // Not JSON, return the text
+      return text.trim() || fallback;
+    }
+    
     return fallback;
   } catch {
-    const text = await response.text();
-    return text.trim() || fallback;
+    return fallback;
   }
 }
