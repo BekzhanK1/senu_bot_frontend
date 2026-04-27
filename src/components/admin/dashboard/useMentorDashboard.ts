@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentTgUser, showTwaAlert, showTwaError, twaHapticLight, twaHapticSuccess } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
-import { TYPE_ACCENT, emptyWeeklyHours } from './constants';
+import { TYPE_ACCENT, defaultAppSettings, emptyWeeklyHours } from './constants';
 import { buildQuery, requestJson } from './http';
-import type { AdminRequestItem, AdminUserItem, MeetingBookingRow, TabId, WeeklyHoursState } from './types';
+import type { AdminRequestItem, AdminUserItem, AppSettings, MeetingBookingRow, TabId, WeeklyHoursState } from './types';
 
 type RequestsResponse = { items?: AdminRequestItem[] };
 type UsersResponse = { items?: AdminUserItem[] };
@@ -15,6 +15,11 @@ type ScheduleResponse = {
   weekly_hours?: WeeklyHoursState;
   slot_minutes?: number;
   timezone?: string;
+};
+type AdminSettingsResponse = {
+  settings: AppSettings;
+  updated_by?: number | null;
+  updated_at?: string | null;
 };
 
 export function useMentorDashboard(adminId: number) {
@@ -56,6 +61,9 @@ export function useMentorDashboard(adminId: number) {
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(() => emptyWeeklyHours());
   const [slotMinutes, setSlotMinutes] = useState(30);
   const [scheduleTimezone, setScheduleTimezone] = useState('Asia/Almaty');
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => defaultAppSettings());
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
 
   useTwaBackButton(router);
 
@@ -169,6 +177,17 @@ export function useMentorDashboard(adminId: number) {
       setScheduleLoading(false);
     }
   }, [hydrateSchedule]);
+
+  const loadAppSettings = useCallback(async (userId: number) => {
+    setSettingsLoading(true);
+    try {
+      const query = buildQuery({ tg_user_id: userId });
+      const data = await requestJson<AdminSettingsResponse>(`/api/admin/settings${query}`);
+      setAppSettings(data.settings);
+    } finally {
+      setSettingsLoading(false);
+    }
+  }, []);
 
   const refreshAll = useCallback(async () => {
     const userId = requireCurrentUserId();
@@ -422,6 +441,28 @@ export function useMentorDashboard(adminId: number) {
     setBlockingUserId(null);
   }, [requireCurrentUserId, blockingUserId, withErrorAlert]);
 
+  const handleSaveAppSettings = useCallback(async () => {
+    const userId = requireCurrentUserId();
+    if (!userId || settingsSaving) return;
+    setSettingsSaving(true);
+    void twaHapticLight();
+
+    await withErrorAlert(async () => {
+      const data = await requestJson<AdminSettingsResponse>('/api/admin/settings', {
+        method: 'PUT',
+        body: {
+          tg_user_id: userId,
+          settings: appSettings,
+        },
+      });
+      setAppSettings(data.settings);
+      void twaHapticSuccess();
+      await showTwaAlert('Настройки сохранены.');
+    }, 'Не удалось сохранить настройки.');
+
+    setSettingsSaving(false);
+  }, [requireCurrentUserId, settingsSaving, withErrorAlert, appSettings]);
+
   const accentBar = useCallback(
     (requestType: string) => TYPE_ACCENT[requestType] ?? 'from-[var(--tg-theme-button-color)] to-indigo-600',
     []
@@ -442,9 +483,10 @@ export function useMentorDashboard(adminId: number) {
         loadStats(telegramUser.id, 'pending'),
         loadRequests(telegramUser.id, 'all', 'pending'),
         loadUsers(telegramUser.id),
+        loadAppSettings(telegramUser.id),
       ]);
     }, 'Не удалось войти.');
-  }, [adminId, router, loadStats, loadRequests, loadUsers, withErrorAlert]);
+  }, [adminId, router, loadStats, loadRequests, loadUsers, loadAppSettings, withErrorAlert]);
 
   useEffect(() => {
     if (!tgUserId) return;
@@ -460,6 +502,11 @@ export function useMentorDashboard(adminId: number) {
     if (!tgUserId || tab !== 'meetings') return;
     void withErrorAlert(() => loadMeetingsAndSchedule(tgUserId), 'Не удалось загрузить слоты и расписание.');
   }, [tgUserId, tab, loadMeetingsAndSchedule, withErrorAlert]);
+
+  useEffect(() => {
+    if (!tgUserId || tab !== 'settings') return;
+    void withErrorAlert(() => loadAppSettings(tgUserId), 'Не удалось загрузить настройки.');
+  }, [tgUserId, tab, loadAppSettings, withErrorAlert]);
 
   return {
     adminId,
@@ -499,6 +546,10 @@ export function useMentorDashboard(adminId: number) {
     setSlotMinutes,
     scheduleTimezone,
     setScheduleTimezone,
+    appSettings,
+    setAppSettings,
+    settingsLoading,
+    settingsSaving,
     scheduleLoading,
     scheduleSaving,
     categoryCounters,
@@ -516,6 +567,8 @@ export function useMentorDashboard(adminId: number) {
     handleSubmitEvent,
     handleSubmitBroadcast,
     handleToggleBlock,
+    handleSaveAppSettings,
     loadMeetingsAndSchedule,
+    loadAppSettings,
   };
 }

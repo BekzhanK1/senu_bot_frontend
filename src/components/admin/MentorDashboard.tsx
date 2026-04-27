@@ -9,6 +9,10 @@ import { UsersTab } from './dashboard/UsersTab';
 import { BroadcastTab } from './dashboard/BroadcastTab';
 import { ReplyModal } from './dashboard/ReplyModal';
 import { useMentorDashboard } from './dashboard/useMentorDashboard';
+import { SettingsTab } from './dashboard/SettingsTab';
+import { ContentTab } from './dashboard/ContentTab';
+import { MenuTab } from './dashboard/MenuTab';
+import { MentorsTab } from './dashboard/MentorsTab';
 
 export function MentorDashboard({ adminId }: { adminId: number }) {
   const dashboard = useMentorDashboard(adminId);
@@ -88,6 +92,31 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
             broadcastSubmitting={dashboard.broadcastSubmitting}
             onTextChange={dashboard.setBroadcastText}
             onSubmit={() => void dashboard.handleSubmitBroadcast()}
+          />
+        )}
+
+        {dashboard.tab === 'content' && dashboard.tgUserId && (
+          <ContentTab tgUserId={dashboard.tgUserId} />
+        )}
+
+        {dashboard.tab === 'menu' && dashboard.tgUserId && (
+          <MenuTab tgUserId={dashboard.tgUserId} />
+        )}
+
+        {dashboard.tab === 'mentors' && dashboard.tgUserId && (
+          <MentorsTab tgUserId={dashboard.tgUserId} />
+        )}
+
+        {dashboard.tab === 'settings' && (
+          <SettingsTab
+            settings={dashboard.appSettings}
+            loading={dashboard.settingsLoading}
+            saving={dashboard.settingsSaving}
+            onChange={dashboard.setAppSettings}
+            onRefresh={() => {
+              if (dashboard.tgUserId) void dashboard.loadAppSettings(dashboard.tgUserId);
+            }}
+            onSave={() => void dashboard.handleSaveAppSettings()}
           />
         )}
       </div>

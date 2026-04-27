@@ -16,6 +16,8 @@ import Link from 'next/link';
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
+  const [homeTitle, setHomeTitle] = useState('Твой SENU-помощник готов к работе');
+  const [homeFooter, setHomeFooter] = useState('SENU Digital Mentor v2.0');
   const adminId = Number(process.env.NEXT_PUBLIC_ADMIN_ID || 0);
 
   useEffect(() => {
@@ -29,6 +31,26 @@ export default function Home() {
             ? e
             : new Error('Не удалось загрузить данные пользователя Telegram.')
         );
+      });
+  }, []);
+
+  useEffect(() => {
+    void fetch('/api/settings/public', { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          miniapp_home_title?: string;
+          miniapp_home_footer?: string;
+        };
+        if (typeof data.miniapp_home_title === 'string' && data.miniapp_home_title.trim()) {
+          setHomeTitle(data.miniapp_home_title.trim());
+        }
+        if (typeof data.miniapp_home_footer === 'string' && data.miniapp_home_footer.trim()) {
+          setHomeFooter(data.miniapp_home_footer.trim());
+        }
+      })
+      .catch(() => {
+        // Keep defaults on fetch errors.
       });
   }, []);
 
@@ -92,7 +114,7 @@ export default function Home() {
           Привет, {user?.first_name || 'Студент'}! 👋
         </h1>
         <p className="text-[var(--tg-theme-hint-color)] text-sm">
-          Твой SENU-помощник готов к работе
+          {homeTitle}
         </p>
       </header>
 
@@ -116,7 +138,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-10 text-center text-[var(--tg-theme-hint-color)] text-[10px] uppercase tracking-widest opacity-50 font-medium">
-        SENU Digital Mentor v2.0
+        {homeFooter}
       </footer>
     </main>
   );

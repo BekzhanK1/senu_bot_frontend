@@ -1,5 +1,5 @@
-import { CalendarClock, CalendarHeart, Radio, Sparkles, Users } from 'lucide-react';
-import type { TabId, WeeklyHoursState } from './types';
+import { CalendarClock, CalendarHeart, FileText, Menu, Radio, Settings2, Sparkles, UserCog, Users } from 'lucide-react';
+import type { AppSettings, TabId, WeeklyHoursState } from './types';
 
 export const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 export const SLOT_OPTIONS = [15, 20, 30, 45, 60] as const;
@@ -27,6 +27,29 @@ export const TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = 
   { id: 'event', label: 'Событие', icon: CalendarHeart },
   { id: 'users', label: 'Студенты', icon: Users },
   { id: 'broadcast', label: 'Рассылка', icon: Radio },
+  { id: 'content', label: 'Контент', icon: FileText },
+  { id: 'menu', label: 'Меню', icon: Menu },
+  { id: 'mentors', label: 'Менторы', icon: UserCog },
+  { id: 'settings', label: 'Настройки', icon: Settings2 },
+];
+
+export const CONTENT_CATEGORIES = [
+  { value: 'general', label: 'Общее' },
+  { value: 'crisis', label: 'Кризис' },
+  { value: 'menu', label: 'Меню' },
+  { value: 'notification', label: 'Уведомления' },
+];
+
+export const CONTENT_TYPES = [
+  { value: 'text', label: 'Текст' },
+  { value: 'html', label: 'HTML' },
+  { value: 'markdown', label: 'Markdown' },
+];
+
+export const ACTION_TYPES = [
+  { value: 'command', label: 'Команда' },
+  { value: 'webapp', label: 'Web App' },
+  { value: 'callback', label: 'Callback' },
 ];
 
 export function emptyWeeklyHours(): WeeklyHoursState {
@@ -36,4 +59,17 @@ export function emptyWeeklyHours(): WeeklyHoursState {
       { enabled: i < 5, start: '10:00', end: '18:00' },
     ])
   ) as WeeklyHoursState;
+}
+
+export function defaultAppSettings(): AppSettings {
+  return {
+    welcome_message:
+      '🌟 <b>Привет, {first_name}!</b>\n\nЯ бот SENU Buddy: помогаю связаться с ментором без лишних шагов.',
+    mentor_about_text: '👑 <b>Айнур — твой проводник и ментор</b>',
+    mentor_photo_url: '',
+    support_bot_username: '@pcs_nu_bot',
+    support_hotline: '111',
+    miniapp_home_title: 'Твой SENU-помощник готов к работе',
+    miniapp_home_footer: 'SENU Digital Mentor v2.0',
+  };
 }
