@@ -10,8 +10,6 @@ import { BroadcastTab } from './dashboard/BroadcastTab';
 import { ReplyModal } from './dashboard/ReplyModal';
 import { useMentorDashboard } from './dashboard/useMentorDashboard';
 import { SettingsTab } from './dashboard/SettingsTab';
-import { ContentTab } from './dashboard/ContentTab';
-import { MenuTab } from './dashboard/MenuTab';
 import { MentorsTab } from './dashboard/MentorsTab';
 
 export function MentorDashboard({ adminId }: { adminId: number }) {
@@ -93,14 +91,6 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
             onTextChange={dashboard.setBroadcastText}
             onSubmit={() => void dashboard.handleSubmitBroadcast()}
           />
-        )}
-
-        {dashboard.tab === 'content' && dashboard.tgUserId && (
-          <ContentTab tgUserId={dashboard.tgUserId} />
-        )}
-
-        {dashboard.tab === 'menu' && dashboard.tgUserId && (
-          <MenuTab tgUserId={dashboard.tgUserId} />
         )}
 
         {dashboard.tab === 'mentors' && dashboard.tgUserId && (

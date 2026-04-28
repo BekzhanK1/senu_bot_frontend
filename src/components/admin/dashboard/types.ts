@@ -43,28 +43,7 @@ export type AppSettings = {
   miniapp_home_footer: string;
 };
 
-export type TabId = 'requests' | 'meetings' | 'event' | 'users' | 'broadcast' | 'settings' | 'content' | 'menu' | 'mentors';
-
-export type DynamicContentItem = {
-  id: number;
-  key: string;
-  content: string;
-  content_type: string;
-  category: string;
-  description?: string | null;
-  updated_by?: number | null;
-  updated_at?: string | null;
-};
-
-export type MenuButtonItem = {
-  id: number;
-  text: string;
-  action_type: string;
-  action_value: string;
-  position: number;
-  icon?: string | null;
-  required_role?: string | null;
-};
+export type TabId = 'requests' | 'meetings' | 'event' | 'users' | 'broadcast' | 'settings' | 'mentors';
 
 export type MentorItem = {
   user_id: number;

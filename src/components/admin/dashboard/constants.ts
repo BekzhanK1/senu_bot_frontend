@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarHeart, FileText, Menu, Radio, Settings2, Sparkles, UserCog, Users, MoreHorizontal } from 'lucide-react';
+import { CalendarClock, CalendarHeart, Radio, Settings2, Sparkles, UserCog, Users } from 'lucide-react';
 import type { AppSettings, TabId, WeeklyHoursState } from './types';
 
 export const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -32,8 +32,6 @@ export const PRIMARY_TABS: Array<{ id: TabId; label: string; icon: typeof Sparkl
 
 // Secondary tabs - in "More" menu
 export const SECONDARY_TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
-  { id: 'content', label: 'Контент', icon: FileText },
-  { id: 'menu', label: 'Меню', icon: Menu },
   { id: 'mentors', label: 'Менторы', icon: UserCog },
   { id: 'settings', label: 'Настройки', icon: Settings2 },
 ];
@@ -42,25 +40,6 @@ export const SECONDARY_TABS: Array<{ id: TabId; label: string; icon: typeof Spar
 export const TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
   ...PRIMARY_TABS,
   ...SECONDARY_TABS,
-];
-
-export const CONTENT_CATEGORIES = [
-  { value: 'general', label: 'Общее' },
-  { value: 'crisis', label: 'Кризис' },
-  { value: 'menu', label: 'Меню' },
-  { value: 'notification', label: 'Уведомления' },
-];
-
-export const CONTENT_TYPES = [
-  { value: 'text', label: 'Текст' },
-  { value: 'html', label: 'HTML' },
-  { value: 'markdown', label: 'Markdown' },
-];
-
-export const ACTION_TYPES = [
-  { value: 'command', label: 'Команда' },
-  { value: 'webapp', label: 'Web App' },
-  { value: 'callback', label: 'Callback' },
 ];
 
 export function emptyWeeklyHours(): WeeklyHoursState {
