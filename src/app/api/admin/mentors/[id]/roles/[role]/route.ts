@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:8080';
+const BACKEND_BASE = BACKEND_URL.replace(/\/$/, '');
 const BACKEND_TOKEN = process.env.BACKEND_API_TOKEN || '';
 
 export async function DELETE(
@@ -11,7 +12,7 @@ export async function DELETE(
   const query = searchParams.toString();
 
   const response = await fetch(
-    `${BACKEND_URL}/api/admin/mentors/${params.id}/roles/${params.role}?${query}`,
+    `${BACKEND_BASE}/api/admin/mentors/${params.id}/roles/${params.role}?${query}`,
     {
       method: 'DELETE',
       headers: {

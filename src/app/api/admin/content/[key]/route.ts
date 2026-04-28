@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_API_URL || 'http://localhost:8080';
+const BACKEND_BASE = BACKEND_URL.replace(/\/$/, '');
 const BACKEND_TOKEN = process.env.BACKEND_API_TOKEN || '';
 
 export async function PUT(
@@ -9,7 +10,7 @@ export async function PUT(
 ) {
   const body = await request.json();
 
-  const response = await fetch(`${BACKEND_URL}/api/admin/content/${params.key}`, {
+  const response = await fetch(`${BACKEND_BASE}/api/admin/content/${params.key}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ export async function DELETE(
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.toString();
 
-  const response = await fetch(`${BACKEND_URL}/api/admin/content/${params.key}?${query}`, {
+  const response = await fetch(`${BACKEND_BASE}/api/admin/content/${params.key}?${query}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

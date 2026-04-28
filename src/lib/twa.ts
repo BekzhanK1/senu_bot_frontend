@@ -86,7 +86,21 @@ function extractTgUser(webApp: WebAppModule): TgUserPayload {
 
 export async function getCurrentTgUser(): Promise<TgUserPayload> {
   const webApp = await loadWebApp();
-  return extractTgUser(webApp);
+  try {
+    return extractTgUser(webApp);
+  } catch {
+    if (process.env.NODE_ENV === 'development') {
+      const id = Number(process.env.NEXT_PUBLIC_DEV_TG_ID);
+      if (Number.isFinite(id) && id > 0) {
+        return {
+          id,
+          username: process.env.NEXT_PUBLIC_DEV_TG_USERNAME || undefined,
+          full_name: process.env.NEXT_PUBLIC_DEV_TG_FULL_NAME || 'Dev User',
+        };
+      }
+    }
+    throw new Error('Не удалось определить пользователя Telegram. Открой Mini App из чата с ботом.');
+  }
 }
 
 /** Лёгкая тактильная отдача в Telegram (если доступно). */
