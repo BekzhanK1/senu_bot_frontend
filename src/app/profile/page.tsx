@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
-import { getCurrentTgUser, showTwaError } from '@/lib/twa';
+import { getCurrentTgUser, loadWebApp, showTwaError } from '@/lib/twa';
 import { useTwaBackButton } from '@/lib/useTwaBackButton';
 
 type UserRequestItem = {
@@ -40,6 +40,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [tgInitData, setTgInitData] = useState<string>('');
+  const [tgInitDataUnsafe, setTgInitDataUnsafe] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'resolved'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
@@ -65,6 +67,18 @@ export default function ProfilePage() {
   const toggleExpanded = (id: number) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  useEffect(() => {
+    void loadWebApp()
+      .then((w) => {
+        setTgInitData(w.initData || '(empty)');
+        setTgInitDataUnsafe(JSON.stringify(w.initDataUnsafe ?? {}, null, 2));
+      })
+      .catch(() => {
+        setTgInitData('(not available outside Telegram)');
+        setTgInitDataUnsafe('(not available outside Telegram)');
+      });
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -103,6 +117,12 @@ export default function ProfilePage() {
 
       <h1 className="text-2xl font-bold mb-2">Мой профиль</h1>
       <p className="text-sm text-[var(--tg-theme-hint-color)] mb-4">Твои данные и история заявок.</p>
+      <div className="p-4 rounded-2xl bg-[var(--tg-theme-secondary-bg-color)] mb-4">
+        <div className="font-semibold mb-2">Telegram initData (dev)</div>
+        <pre className="text-xs whitespace-pre-wrap break-all opacity-80">{tgInitData || 'Загрузка...'}</pre>
+        <div className="font-semibold mt-3 mb-2">Telegram initDataUnsafe (dev)</div>
+        <pre className="text-xs whitespace-pre-wrap break-words opacity-80">{tgInitDataUnsafe || 'Загрузка...'}</pre>
+      </div>
 
       {isLoading ? (
         <div className="text-sm text-[var(--tg-theme-hint-color)]">Загрузка...</div>
