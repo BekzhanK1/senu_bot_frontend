@@ -11,7 +11,6 @@ type Props = {
   meetingActionId: number | null;
   weeklyHours: WeeklyHoursState;
   slotMinutes: number;
-  scheduleTimezone: string;
   scheduleLoading: boolean;
   scheduleSaving: boolean;
   onRefresh: () => void;
@@ -19,7 +18,6 @@ type Props = {
   onCompleteMeeting: (bookingId: number) => void;
   onWeeklyHoursChange: (next: WeeklyHoursState) => void;
   onSlotMinutesChange: (value: number) => void;
-  onTimezoneChange: (value: string) => void;
   onSaveSchedule: () => void;
 };
 
@@ -29,7 +27,6 @@ export function MeetingsTab({
   meetingActionId,
   weeklyHours,
   slotMinutes,
-  scheduleTimezone,
   scheduleLoading,
   scheduleSaving,
   onRefresh,
@@ -37,7 +34,6 @@ export function MeetingsTab({
   onCompleteMeeting,
   onWeeklyHoursChange,
   onSlotMinutesChange,
-  onTimezoneChange,
   onSaveSchedule,
 }: Props) {
   return (
@@ -131,7 +127,7 @@ export function MeetingsTab({
       <div className="rounded-3xl p-4 border border-black/[0.06] space-y-4">
         <h2 className="font-bold text-lg">Рабочие часы (Пн–Вс)</h2>
         <p className="text-xs text-[var(--tg-theme-hint-color)] leading-relaxed">
-          Студенты видят только слоты внутри этих окон. Часовой пояс — как в календаре ментора.
+          Студенты видят только слоты внутри этих окон. Время указывается по Алматы.
         </p>
         {scheduleLoading ? (
           <div className="flex justify-center py-8">
@@ -206,17 +202,6 @@ export function MeetingsTab({
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="block space-y-1">
-              <span className="text-xs font-semibold text-[var(--tg-theme-hint-color)] uppercase">
-                Часовой пояс (IANA)
-              </span>
-              <input
-                value={scheduleTimezone}
-                onChange={(e) => onTimezoneChange(e.target.value)}
-                placeholder="Asia/Almaty"
-                className="w-full rounded-2xl px-4 py-3 bg-[var(--tg-theme-secondary-bg-color)] border border-black/[0.06] text-sm"
-              />
             </label>
             <button
               type="button"

@@ -42,7 +42,7 @@ export function MentorsTab({ tgUserId }: Props) {
       setMentors(mentorsData.items);
       setRoles(rolesData.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setError(err instanceof Error ? err.message : 'Не удалось загрузить данные');
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export function MentorsTab({ tgUserId }: Props) {
 
   async function handleCreate() {
     if (!newForm.target_user_id || !newForm.display_name) {
-      setError('User ID and display name are required');
+      setError('Telegram ID и отображаемое имя обязательны');
       return;
     }
 
@@ -70,13 +70,13 @@ export function MentorsTab({ tgUserId }: Props) {
       setNewForm({ target_user_id: '', display_name: '', languages: '', skills: '' });
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create mentor');
+      setError(err instanceof Error ? err.message : 'Не удалось создать ментора');
     }
   }
 
   async function handleAssignRole(userId: number) {
     if (!selectedRole) {
-      setError('Please select a role');
+      setError('Выберите роль');
       return;
     }
 
@@ -94,12 +94,12 @@ export function MentorsTab({ tgUserId }: Props) {
       setSelectedRole('');
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to assign role');
+      setError(err instanceof Error ? err.message : 'Не удалось назначить роль');
     }
   }
 
   async function handleRemoveRole(userId: number, roleName: string) {
-    if (!confirm(`Remove role "${roleName}"?`)) return;
+    if (!confirm(`Удалить роль "${roleName}"?`)) return;
 
     try {
       setError('');
@@ -109,7 +109,7 @@ export function MentorsTab({ tgUserId }: Props) {
       });
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to remove role');
+      setError(err instanceof Error ? err.message : 'Не удалось удалить роль');
     }
   }
 
@@ -125,12 +125,12 @@ export function MentorsTab({ tgUserId }: Props) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-[var(--tg-theme-text-color)]">
+        <h2 className="text-lg font-bold text-[var(--tg-theme-text-color)]">
           Менторы ({mentors.length})
         </h2>
         <button
           onClick={() => setCreating(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-sm font-semibold active:scale-95 transition-transform"
         >
           <Plus className="w-4 h-4" />
           Добавить
@@ -138,7 +138,9 @@ export function MentorsTab({ tgUserId }: Props) {
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-red-500/10 text-red-600 text-sm">{error}</div>
+        <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 text-sm border border-rose-500/20">
+          {error}
+        </div>
       )}
 
       {/* Create Form */}
@@ -185,7 +187,7 @@ export function MentorsTab({ tgUserId }: Props) {
 
           <button
             onClick={handleCreate}
-            className="w-full py-2 rounded-xl bg-blue-500 text-white text-sm font-medium"
+            className="w-full py-3 rounded-xl bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-sm font-semibold active:scale-[0.98] transition-transform"
           >
             Создать
           </button>
@@ -246,12 +248,12 @@ export function MentorsTab({ tgUserId }: Props) {
                     mentor.roles.map((role) => (
                       <div
                         key={role}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-600 text-xs"
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--tg-theme-button-color)]/10 text-[var(--tg-theme-button-color)] text-xs font-medium"
                       >
                         <span>{role}</span>
                         <button
                           onClick={() => handleRemoveRole(mentor.user_id, role)}
-                          className="hover:text-red-600"
+                          className="hover:text-rose-600 transition-colors"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -260,7 +262,8 @@ export function MentorsTab({ tgUserId }: Props) {
                   )}
                   <button
                     onClick={() => setAssigningRole(mentor.user_id)}
-                    className="text-blue-600 text-xs"
+                    className="text-[var(--tg-theme-button-color)] hover:opacity-70 transition-opacity"
+                    aria-label="Добавить роль"
                   >
                     <UserPlus className="w-4 h-4" />
                   </button>
@@ -283,7 +286,7 @@ export function MentorsTab({ tgUserId }: Props) {
                     </select>
                     <button
                       onClick={() => handleAssignRole(mentor.user_id)}
-                      className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium"
+                      className="px-4 py-2 rounded-xl bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-sm font-semibold active:scale-95 transition-transform"
                     >
                       Назначить
                     </button>
@@ -292,7 +295,7 @@ export function MentorsTab({ tgUserId }: Props) {
                         setAssigningRole(null);
                         setSelectedRole('');
                       }}
-                      className="px-4 py-2 rounded-xl bg-gray-500/10 text-[var(--tg-theme-hint-color)] text-sm"
+                      className="px-4 py-2 rounded-xl bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] text-sm active:scale-95 transition-transform"
                     >
                       Отмена
                     </button>
@@ -306,18 +309,22 @@ export function MentorsTab({ tgUserId }: Props) {
 
       {/* Available Roles */}
       <div className="p-4 rounded-2xl bg-[var(--tg-theme-secondary-bg-color)] border border-black/[0.04] dark:border-white/[0.06]">
-        <h3 className="font-semibold text-[var(--tg-theme-text-color)] mb-3">
+        <h3 className="font-bold text-[var(--tg-theme-text-color)] mb-3">
           Доступные роли
         </h3>
         <div className="flex flex-wrap gap-2">
-          {roles.map((role) => (
-            <div
-              key={role.id}
-              className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-600 text-sm"
-            >
-              {role.name}
-            </div>
-          ))}
+          {roles.length === 0 ? (
+            <span className="text-sm text-[var(--tg-theme-hint-color)]">Роли не найдены</span>
+          ) : (
+            roles.map((role) => (
+              <div
+                key={role.id}
+                className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-sm font-medium"
+              >
+                {role.name}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

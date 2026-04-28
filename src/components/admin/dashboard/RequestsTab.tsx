@@ -141,24 +141,23 @@ export function RequestsTab({
                   <div className="flex gap-2">
                     <button
                       type="button"
+                      onClick={() => onReply(item)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-sm font-semibold active:scale-[0.98] transition-transform"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Ответить
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => onResolve(item.id)}
                       disabled={resolvingId === item.id}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50 active:scale-[0.98]"
+                      className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50 active:scale-[0.98] transition-transform"
                     >
                       {resolvingId === item.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <CheckCircle2 className="w-4 h-4" />
                       )}
-                      Закрыть заявку
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onReply(item)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-sm font-semibold active:scale-[0.98]"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Ответить
                     </button>
                   </div>
                 )}

@@ -24,7 +24,6 @@ export default function MeetingPage() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slots, setSlots] = useState<SlotItem[]>([]);
   const [slotMinutes, setSlotMinutes] = useState(30);
-  const [scheduleTz, setScheduleTz] = useState<string | null>(null);
 
   useTwaBackButton(router);
 
@@ -49,11 +48,9 @@ export default function MeetingPage() {
       const data = (await response.json()) as {
         slots?: SlotItem[];
         slot_minutes?: number;
-        timezone?: string;
       };
       setSlots(data.slots ?? []);
       if (typeof data.slot_minutes === 'number') setSlotMinutes(data.slot_minutes);
-      setScheduleTz(data.timezone ?? null);
     } catch (e) {
       setSlots([]);
       await showTwaError(e instanceof Error ? e : new Error('Ошибка загрузки слотов.'));
@@ -112,8 +109,7 @@ export default function MeetingPage() {
 
       <h1 className="text-2xl font-bold mb-2">Запись на встречу 📅</h1>
       <p className="text-[var(--tg-theme-hint-color)] text-sm mb-6 leading-relaxed">
-        Выбери день и свободный слот. Время в расписании ментора
-        {scheduleTz ? ` (${scheduleTz})` : ''}. Длительность одного слота — {slotMinutes} мин.
+        Выбери день и свободный слот. Время указано по Алматы. Длительность одного слота — {slotMinutes} мин.
       </p>
 
       <section className="mb-8">

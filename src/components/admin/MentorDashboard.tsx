@@ -46,7 +46,6 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
             meetingActionId={dashboard.meetingActionId}
             weeklyHours={dashboard.weeklyHours}
             slotMinutes={dashboard.slotMinutes}
-            scheduleTimezone={dashboard.scheduleTimezone}
             scheduleLoading={dashboard.scheduleLoading}
             scheduleSaving={dashboard.scheduleSaving}
             onRefresh={() => {
@@ -56,7 +55,6 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
             onCompleteMeeting={(bookingId) => void dashboard.handleCompleteMeeting(bookingId)}
             onWeeklyHoursChange={dashboard.setWeeklyHours}
             onSlotMinutesChange={dashboard.setSlotMinutes}
-            onTimezoneChange={dashboard.setScheduleTimezone}
             onSaveSchedule={() => void dashboard.handleSaveSchedule()}
           />
         )}
