@@ -77,16 +77,21 @@ export default function PollPage() {
             <div className="space-y-3">
               {poll.topics && poll.topics.length > 0 ? (
                 poll.topics.map((t: any) => (
-                  <div key={t.id} className="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
-                    <span className="text-sm font-medium flex-1 mr-2">{t.title}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[var(--tg-theme-hint-color)]">{t.votes}</span>
-                      <button 
-                        onClick={() => handleVote(t.id)}
-                        className="p-2 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors dark:bg-blue-900/30"
-                      >
-                        <ThumbsUp className="w-4 h-4" />
-                      </button>
+                  <div key={t.id} className="flex flex-col p-3 bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium flex-1 mr-2">{t.title}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[var(--tg-theme-hint-color)]">{t.votes}</span>
+                        <button 
+                          onClick={() => handleVote(t.id)}
+                          className="p-2 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors dark:bg-blue-900/30"
+                        >
+                          <ThumbsUp className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-[var(--tg-theme-hint-color)]">
+                      {t.suggested_by ? `👤 Предложил(а): ${t.author_name || 'Студент'}` : '👑 Предложено ментором'}
                     </div>
                   </div>
                 ))
