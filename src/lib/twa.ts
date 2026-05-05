@@ -151,7 +151,7 @@ export async function callApi(endpoint: string, method: 'GET' | 'POST' = 'POST',
     const body = method === 'POST' ? JSON.stringify({ ...payload, tg_user: tgUser }) : undefined;
     
     // For GET, we could pass tgUser in headers, but currently GET /api/poll doesn't require tgUser in body.
-    const response = await fetch(`/api/${endpoint}`, {
+    const response = await fetch(`/api/gateway/${endpoint}`, {
       method,
       headers,
       body,
