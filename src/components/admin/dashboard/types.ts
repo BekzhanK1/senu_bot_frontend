@@ -43,7 +43,7 @@ export type AppSettings = {
   miniapp_home_footer: string;
 };
 
-export type TabId = 'requests' | 'meetings' | 'event' | 'users' | 'broadcast' | 'settings' | 'mentors';
+export type TabId = 'requests' | 'meetings' | 'event' | 'users' | 'broadcast' | 'settings' | 'mentors' | 'polls';
 
 export type MentorItem = {
   user_id: number;

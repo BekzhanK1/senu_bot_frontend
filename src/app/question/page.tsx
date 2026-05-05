@@ -9,12 +9,16 @@ import { ChevronLeft, Send, ShieldCheck, User } from 'lucide-react';
 export default function QuestionPage() {
   const router = useRouter();
   const [text, setText] = useState('');
-  const [isAnon, setIsAnon] = useState(false);
+  const [fullName, setFullName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useTwaBackButton(router);
 
   const handleSubmit = async () => {
+    if (!fullName.trim()) {
+      await showTwaError('Пожалуйста, введите ваше ФИО.');
+      return;
+    }
     if (!text.trim()) {
       await showTwaError('Напиши вопрос перед отправкой.');
       return;
@@ -24,10 +28,11 @@ export default function QuestionPage() {
     setIsSubmitting(true);
     const ok = await sendRequestViaApi('question', {
       text: text.trim(),
-      is_anonymous: isAnon,
+      full_name_input: fullName.trim(),
     });
     if (ok) {
       setText('');
+      setFullName('');
       await showTwaAlert('Вопрос отправлен ментору.');
     }
     setIsSubmitting(false);
@@ -45,6 +50,16 @@ export default function QuestionPage() {
         Спроси о чем угодно: учеба, карьера или личный баланс. Ментор ответит тебе в чате.
       </p>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          placeholder="Ваше ФИО (обязательно)"
+          className="w-full p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl border-2 border-transparent focus:border-[var(--tg-theme-button-color)] transition-all outline-none text-sm font-medium"
+        />
+      </div>
+
       <div className="mb-6">
         <textarea
           value={text}
@@ -54,25 +69,8 @@ export default function QuestionPage() {
         />
       </div>
 
-      <div className="flex gap-2 p-1 bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl mb-8">
-        <button
-          onClick={() => setIsAnon(false)}
-          className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl transition-all ${!isAnon ? 'bg-white dark:bg-zinc-800 shadow-sm' : 'opacity-60'}`}
-        >
-          <User className="w-4 h-4" />
-          <span className="text-xs font-semibold">Открыто</span>
-        </button>
-        <button
-          onClick={() => setIsAnon(true)}
-          className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl transition-all ${isAnon ? 'bg-white dark:bg-zinc-800 shadow-sm text-blue-500' : 'opacity-60'}`}
-        >
-          <ShieldCheck className="w-4 h-4" />
-          <span className="text-xs font-semibold">Анонимно</span>
-        </button>
-      </div>
-
       <button
-        disabled={!text.trim() || isSubmitting}
+        disabled={!text.trim() || !fullName.trim() || isSubmitting}
         onClick={handleSubmit}
         className="w-full p-4 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
       >

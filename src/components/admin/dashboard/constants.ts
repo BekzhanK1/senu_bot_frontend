@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarHeart, Radio, Settings2, Sparkles, UserCog, Users } from 'lucide-react';
+import { CalendarClock, CalendarHeart, Radio, Settings2, Sparkles, UserCog, Users, BarChart2 } from 'lucide-react';
 import type { AppSettings, TabId, WeeklyHoursState } from './types';
 
 export const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -33,6 +33,7 @@ export const PRIMARY_TABS: Array<{ id: TabId; label: string; icon: typeof Sparkl
 // Secondary tabs - in "More" menu
 export const SECONDARY_TABS: Array<{ id: TabId; label: string; icon: typeof Sparkles }> = [
   { id: 'mentors', label: 'Менторы', icon: UserCog },
+  { id: 'polls', label: 'Опросы', icon: BarChart2 as any },
   { id: 'settings', label: 'Настройки', icon: Settings2 },
 ];
 

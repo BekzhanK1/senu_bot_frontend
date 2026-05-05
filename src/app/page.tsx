@@ -10,7 +10,9 @@ import {
   LifeBuoy, 
   Lightbulb,
   Shield,
-  ChevronRight
+  ChevronRight,
+  BarChart2,
+  MessageSquareHeart
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -71,7 +73,19 @@ export default function Home() {
       title: 'Задать вопрос', 
       icon: <MessageCircleQuestion className="w-6 h-6 text-green-500" />, 
       href: '/question', 
-      desc: 'Анонимно или открыто' 
+      desc: 'Отправить вопрос ментору' 
+    },
+    { 
+      title: 'Голосование', 
+      icon: <BarChart2 className="w-6 h-6 text-indigo-500" />, 
+      href: '/poll', 
+      desc: 'Голосовать за темы встреч' 
+    },
+    { 
+      title: 'Оставить фидбек', 
+      icon: <MessageSquareHeart className="w-6 h-6 text-pink-500" />, 
+      href: '/feedback', 
+      desc: 'Поделитесь своим мнением' 
     },
     { 
       title: 'О менторе', 

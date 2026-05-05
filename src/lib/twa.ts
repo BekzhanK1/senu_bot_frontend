@@ -141,3 +141,32 @@ export async function sendRequestViaApi(type: 'question' | 'meeting' | 'game_108
     return false;
   }
 }
+
+export async function callApi(endpoint: string, method: 'GET' | 'POST' = 'POST', payload?: object): Promise<any> {
+  try {
+    const tgUser = await getCurrentTgUser();
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    
+    // We send tgUser inside the body for POST
+    const body = method === 'POST' ? JSON.stringify({ ...payload, tg_user: tgUser }) : undefined;
+    
+    // For GET, we could pass tgUser in headers, but currently GET /api/poll doesn't require tgUser in body.
+    const response = await fetch(`/api/${endpoint}`, {
+      method,
+      headers,
+      body,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      let errMsg = text;
+      try { errMsg = JSON.parse(text).detail || text; } catch {}
+      throw new Error(errMsg || 'Ошибка запроса.');
+    }
+    
+    return await response.json();
+  } catch (e) {
+    await showTwaError(e instanceof Error ? e : new Error('Не удалось отправить запрос.'));
+    return null;
+  }
+}

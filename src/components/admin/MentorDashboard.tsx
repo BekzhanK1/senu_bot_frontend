@@ -11,6 +11,7 @@ import { ReplyModal } from './dashboard/ReplyModal';
 import { useMentorDashboard } from './dashboard/useMentorDashboard';
 import { SettingsTab } from './dashboard/SettingsTab';
 import { MentorsTab } from './dashboard/MentorsTab';
+import PollsTab from './dashboard/PollsTab';
 
 export function MentorDashboard({ adminId }: { adminId: number }) {
   const dashboard = useMentorDashboard(adminId);
@@ -106,6 +107,10 @@ export function MentorDashboard({ adminId }: { adminId: number }) {
             }}
             onSave={() => void dashboard.handleSaveAppSettings()}
           />
+        )}
+
+        {dashboard.tab === 'polls' && (
+          <PollsTab />
         )}
       </div>
 
